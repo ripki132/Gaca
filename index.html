@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>web gaca</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #1e2b3a;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: system-ui, sans-serif;
+        }
+        .container {
+            background: #233240;
+            padding: 30px 20px 40px;
+            border-radius: 40px;
+            box-shadow: 0 20px 30px black;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform: rotate(0deg);
+            cursor: default;
+            /* TRANSITION DIHAPUS - nggak pake transition biar animasi Web API jalan mulus */
+        }
+        .roda-area {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            pointer-events: none;
+        }
+        canvas {
+            display: block;
+            width: 350px;
+            max-width: 80vw;
+            aspect-ratio: 1/1;
+            background: #34495e;
+            border-radius: 50%;
+            box-shadow: 0 0 0 6px #2c3e50, 0 15px 25px black;
+        }
+        .arrow {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 24px solid transparent;
+            border-right: 24px solid transparent;
+            border-top: 45px solid #d4af37;
+            filter: drop-shadow(0 8px 5px black);
+            z-index: 5;
+            pointer-events: none;
+        }
+        .arrow::after {
+            content: "";
+            position: absolute;
+            top: -48px;
+            left: -14px;
+            width: 28px;
+            height: 28px;
+            background: #f1c40f;
+            border-radius: 50%;
+            box-shadow: 0 0 0 4px #1e2b38;
+        }
+        button {
+            background: #fedb70;
+            border: none;
+            border-radius: 60px;
+            padding: 14px 50px;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1f2d39;
+            box-shadow: 0 8px 0 #9b6e2c, 0 8px 20px black;
+            cursor: pointer;
+            transition: 0.05s linear;
+            letter-spacing: 2px;
+            margin-top: 10px;
+            position: relative;
+            z-index: 10;
+        }
+        button:active {
+            transform: translateY(5px);
+            box-shadow: 0 3px 0 #9b6e2c, 0 8px 18px black;
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="prankBox">
+    <div class="roda-area">
+        <canvas id="wheelCanvas" width="500" height="500"></canvas>
+        <div class="arrow"></div>
+    </div>
+    <button id="spinButton">MULAI</button>
+</div>
+
+<script>
+    (function() {
+        // gambar roda statis
+        const items = ['satu', 'dua', 'tiga', 'empat', 'lima'];
+        const colors = ['#F4A261', '#E76F51', '#2A9D8F', '#E9C46A', '#D9BF77'];
+
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        const prankBox = document.getElementById('prankBox');
+        const spinBtn = document.getElementById('spinButton');
+
+        // gambar roda diam
+        function drawWheel() {
+            const count = items.length;
+            const angleStep = (2 * Math.PI) / count;
+            const radius = canvas.width * 0.42;
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < count; i++) {
+                const start = i * angleStep;
+                const end = (i + 1) * angleStep;
+
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.arc(cx, cy, radius, start, end);
+                ctx.closePath();
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fill();
+
+                ctx.strokeStyle = '#1e2b3a';
+                ctx.lineWidth = 1.8;
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.arc(cx, cy, radius, start, end);
+                ctx.lineTo(cx, cy);
+                ctx.stroke();
+            }
+
+            // titik tengah
+            ctx.beginPath();
+            ctx.arc(cx, cy, 18, 0, 2 * Math.PI);
+            ctx.fillStyle = '#B68B40';
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = '#f5c542';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = '#f9e076';
+            ctx.lineWidth = 3.5;
+            ctx.stroke();
+        }
+
+        // ===== PRANK: muter KENCENG pake Web Animation API =====
+        let animation = null;
+
+        function startInfiniteSpin() {
+            // kalau udah muter, jangan mulai lagi
+            if (animation) return;
+            
+            // Web Animation API - infinite rotation
+            animation = prankBox.animate([
+                { transform: 'rotate(0deg)' },
+                { transform: 'rotate(360deg)' }
+            ], {
+                duration: 400,        // 0.4 detik sekali putar (kenceng!)
+                iterations: Infinity,  // muter terus
+                easing: 'linear'       // konstan, nggak lambat
+            });
+        }
+
+        // event klik tombol → mulai muter terus
+        spinBtn.addEventListener('click', function() {
+            startInfiniteSpin();
+        });
+
+        // klik kotak juga bisa mulai
+        prankBox.addEventListener('click', function(e) {
+            if (e.target === spinBtn) return;
+            startInfiniteSpin();
+        });
+
+        drawWheel();
+    })();
+</script>
+</body>
+</html>
